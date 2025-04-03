@@ -1,0 +1,34 @@
+{
+  "__DST__": {
+    "categories": [
+      {
+        "items": [
+          {
+            "productId": 101,
+            "productName": "Laptop",
+            "cost": 999.99
+          },
+          {
+            "productId": 102,
+            "productName": "Smartphone",
+            "cost": 699.99
+          }
+        ]
+      },
+      {
+        "items": [
+          {
+            "productId": 201,
+            "productName": "Tablet",
+            "cost": 349.99
+          },
+          {
+            "productId": 202,
+            "productName": "Smartwatch",
+            "cost": 249.99
+          }
+        ]
+      }
+    ]
+  }
+}
