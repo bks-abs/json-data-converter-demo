@@ -12,13 +12,12 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.bks.util.Src2DstUtil.DST_ROOT_FIELD_NAME;
 import static org.bks.util.Src2DstUtil.SRC_ROOT_FIELD_NAME;
 
 
-public class Array2DTest {
+public class DemoTest {
 
 
     @Test
@@ -335,4 +334,84 @@ public class Array2DTest {
         System.out.println(jsonNode);
     }
 
+    @Test
+    public void testNestedArrayInObject() throws JsonProcessingException {
+        String src = """
+                {
+                    "a": {
+                        "b": {
+                            "c": [
+                                {
+                                    "id": 101,
+                                    "name": "Product A",
+                                    "price": 99.99
+                                },
+                                {
+                                    "id": 102, 
+                                    "name": "Product B",
+                                    "price": 199.99
+                                }
+                            ],
+                            "d": {
+                                "e": "some value"
+                            }
+                        }
+                    }
+                }
+                """;
+
+        String dst = """
+                {
+                  "__DST__": {
+                    "products": [
+                      {
+                        "itemId": 101,
+                        "itemName": "Product A",
+                        "itemPrice": 99.99
+                      },
+                      {
+                        "itemId": 102,
+                        "itemName": "Product B",
+                        "itemPrice": 199.99
+                      }
+                    ]
+                  }
+                }
+                
+                """;
+
+        SrcField srcRoot = new SrcField("0", "-1", SRC_ROOT_FIELD_NAME, FieldType.OBJECT);
+        SrcField a = new SrcField("1", srcRoot.getId(), "a", FieldType.OBJECT);
+        SrcField b = new SrcField("2", a.getId(), "b", FieldType.OBJECT);
+        SrcField c = new SrcField("3", b.getId(), "c", FieldType.ARRAY);
+        SrcField product = new SrcField("4", c.getId(), "product", FieldType.OBJECT);
+        SrcField id = new SrcField("5", product.getId(), "id", FieldType.INTEGER);
+        SrcField name = new SrcField("6", product.getId(), "name", FieldType.STRING);
+        SrcField price = new SrcField("7", product.getId(), "price", FieldType.DOUBLE);
+
+        srcRoot.addChild(a);
+        a.addChild(b);
+        b.addChild(c);
+        c.addChild(product);
+        product.addChild(id, name, price);
+
+        DstField dstRoot = new DstField("0", "-1", DST_ROOT_FIELD_NAME, FieldType.OBJECT);
+        DstField products = new DstField("1", dstRoot.getId(), "products", FieldType.ARRAY);
+        DstField item = new DstField("2", products.getId(), "item", FieldType.OBJECT);
+        DstField itemId = new DstField("3", item.getId(), "itemId", FieldType.INTEGER);
+        DstField itemName = new DstField("4", item.getId(), "itemName", FieldType.STRING);
+        DstField itemPrice = new DstField("5", item.getId(), "itemPrice", FieldType.DOUBLE);
+
+        dstRoot.addChild(products);
+        products.addChild(item);
+        item.addChild(itemId, itemName, itemPrice);
+
+        List<ConvConfig> convConfigs = new ArrayList<>();
+        convConfigs.add(new ConvConfig(id.getId(), itemId.getId()));
+        convConfigs.add(new ConvConfig(name.getId(), itemName.getId()));
+        convConfigs.add(new ConvConfig(price.getId(), itemPrice.getId()));
+
+        JsonNode jsonNode = Src2DstUtil.convertJson(srcRoot, dstRoot, convConfigs, src);
+        System.out.println(jsonNode);
+    }
 }
